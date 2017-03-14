@@ -908,7 +908,7 @@ CallbackFunctions::iterCallback( Index  iter,
     mxArray* pf = mxCreateDoubleScalar(f);
 
     // Create structure to hold extra IPOPT variables
-    static char const * varfields[8] = { "inf_pr", "inf_du", "mu",
+    static char const * varfields[9] = { "x", "inf_pr", "inf_du", "mu",
                                          "d_norm", "regularization_size",
                                          "alpha_du", "alpha_pr", "ls_trials" } ;
 
@@ -921,6 +921,23 @@ CallbackFunctions::iterCallback( Index  iter,
     mxSetField(varStruct,0,"alpha_du",mxCreateDoubleScalar(alpha_du));
     mxSetField(varStruct,0,"alpha_pr",mxCreateDoubleScalar(alpha_pr));
     mxSetField(varStruct,0,"ls_trials",mxCreateDoubleScalar(ls_trials));
+
+    // Copy-pasted from the original Ipopt Matlab interface
+    int n = ip_data->curr()->x()->Dim();
+
+    //The following code translates IPOPT's NLP to the Original NLP, so we can extract x
+    //Original code by Steven Dirske, Stefan Vigerske [GAMS]
+    Ipopt::TNLPAdapter* tnlp_adapter = NULL;
+    if(ip_cq != NULL) {
+        Ipopt::OrigIpoptNLP* orignlp = dynamic_cast<Ipopt::OrigIpoptNLP*>(GetRawPtr(ip_cq->GetIpoptNLP()));
+        if(orignlp != NULL) 
+            tnlp_adapter = dynamic_cast<Ipopt::TNLPAdapter*>(GetRawPtr(orignlp->nlp()));
+    }
+    //If we successfully converted the NLP, extract x [ResortX auto sorts and fills in fixed vars]
+    if(tnlp_adapter != NULL && ip_data != NULL && IsValid(ip_data->curr())) {
+        mxSetField(varStruct,0,"x",mxCreateDoubleMatrix(n,1,mxREAL)); //ip_data->curr()->x()->Dim()+1
+        tnlp_adapter->ResortX(*ip_data->curr()->x(),mxGetPr(mxGetField(varStruct,0,"x")));
+    }
 
     // Call the MATLAB callback function.
     mxArray const * inputs[3] = { pt, pf, varStruct } ;

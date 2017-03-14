@@ -29,7 +29,7 @@ CXXFLAGS = '-fPIC -O3 -DMATLAB_MEXFILE -DHAVE_CSTDDEF ' ;
 CXXFLAGS = [CXXFLAGS '-DIPOPT_INTERFACE_MISSING_COPY_N '] ;
 
 % where are headers files and ipopt libraries
-PREFIX = '/usr/local2' ;
+PREFIX = '/home/restrin/Libraries_Install/ipopt' ;
 
 INCL = [ '-I../src ' ...
          '-I' PREFIX '/include ' ...
@@ -47,12 +47,14 @@ LIBS = [ LIBS ' -L' MATLAB '/bin/glnxa64 -lmwma57' ] ;
 % library MA57 inside MATLAB
 
 % libraries linked statically (check for atlas)
-if exist('/usr/lib/atlas-base/atlas/libblas.a','file')
-  LIBS2 = '-Wl,-Bstatic -L/usr/lib/atlas-base/atlas -lipopt -lcoinmumps -llapack -lblas -Wl,-Bdynamic ';
-else
-  error( ['missing atlas version of blas/lapack libraries\n' ...
-          'to install run the command:\nsudo apt-get install libatlas-base-dev'] ) ;
-end
+% if exist('/usr/lib/atlas-base/atlas/libblas.a','file')
+%   LIBS2 = '-Wl,-Bstatic -L/usr/lib/atlas-base/atlas -lipopt -lcoinmumps -llapack -lblas -Wl,-Bdynamic ';
+% else
+%   error( ['missing atlas version of blas/lapack libraries\n' ...
+%           'to install run the command:\nsudo apt-get install libatlas-base-dev'] ) ;
+% end
+
+LIBS2 = '-Wl,-Bstatic -L/home/restrin/Libraries_Install/ipopt -lipopt -lcoinhsl -L/usr/lib64 -lcoinlapack -lcoinblas -Wl,-Bdynamic ';
 
 % compiler options
 MEXFLAGS = [ '-v -cxx -largeArrayDims ' ...
@@ -62,5 +64,5 @@ MEXFLAGS = [ '-v -cxx -largeArrayDims ' ...
              'CXXLIBS=''$CXXLIBS ' LIBS2 ''''  ] ; % -static -shared-libgcc 
 
 % build and execute compilation command
-cmd = sprintf('mex %s %s %s %s',INCL,files,MEXFLAGS,LIBS) ;
+cmd = sprintf('mex -v GCC=/usr/bin/gcc49 GXX=/usr/bin/g++49 %s %s %s %s',INCL,files,MEXFLAGS,LIBS) ;
 eval(cmd);

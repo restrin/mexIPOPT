@@ -162,6 +162,6 @@ mexFunction( int nlhs, mxArray       *plhs[],
   } catch ( ... ) {
     mexPrintf("\n*** Error using Ipopt Matlab interface: ***\nUnknown error\n");
   }
-  mexPrintf("\n*** IPOPT DONE ***\n");
+  //mexPrintf("\n*** IPOPT DONE ***\n");
 
 }
